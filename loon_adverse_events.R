@@ -93,7 +93,7 @@ t.label <- unlist(Map(function(x) {
   ), collapse = '\n')
 }, l.aae))
 
-l_configure(p, itemlabel=t.label, showItemlabels=TRUE)
+l_configure(p, itemLabel=t.label, showItemLabels=TRUE)
 
 
 ## ------------------------------------------------------------------------
@@ -115,7 +115,7 @@ p['selected'] <- naes > 15 & age > 46
 
 ## ------------------------------------------------------------------------
 createAEplot <- function() {
-  pae <- l_plot(showItemlabels=TRUE, xlabel="Treatment Relative Day", showScales=TRUE)
+  pae <- l_plot(showItemLabels=TRUE, xlabel="Treatment Relative Day", showScales=TRUE)
   
   rectHeight <- 4
   y <- 0

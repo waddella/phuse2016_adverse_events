@@ -3,8 +3,8 @@
 #
 # Author: Adrian Waddell
 # Date: October 10, 2016
-# 
-# Note: 
+#
+# Note:
 # The R markdown and PDF paper that put this code into conctext can be found
 # in the git repository here:
 # https://github.com/waddella/phuse2016_adverse_events
@@ -31,18 +31,18 @@ l.aae <- Map(function(id, ARM) {
   TRTSDT <- as.Date("2016-01-01", "%Y-%m-%d") + sample(0:365, 1, replace = TRUE)
   TRTEDT <- TRTSDT + 200 + rbinom(1, 60, 0.5)
   DISCDEAT <- sample(c(TRUE, FALSE), 1, prob=if(ARM=="ARM A") c(.3,.7) else c(.15,.85))
-  
+
   n_ae <- sample(1:25, 1, prob=if(ARM == "ARM A") weightsA else weightsB)
   i <- sample(1:length(aeterms), size=n_ae, replace=TRUE, prob=c(6,rep(1,10))/16)
   ASTDT <- sample(seq(TRTSDT, TRTEDT-1, by=1), n_ae, replace = TRUE)
   ADURN <- sample(1:18, size=n_ae, replace=TRUE)
   AENDT <- ASTDT + ADURN
-  ii <- order(ASTDT)  
+  ii <- order(ASTDT)
   if(DISCDEAT & any(AENDT>TRTEDT)) {
     AENDT[AENDT>TRTEDT] <- TRTEDT
     ADURN <- as.numeric(AENDT - ASTDT)
-  } 
-  
+  }
+
   list(
     USUBJID = id,
     SEX = sample(c('F', 'M'), 1),
@@ -116,15 +116,15 @@ p['selected'] <- naes > 15 & age > 46
 ## ------------------------------------------------------------------------
 createAEplot <- function() {
   pae <- l_plot(showItemLabels=TRUE, xlabel="Treatment Relative Day", showScales=TRUE)
-  
+
   rectHeight <- 4
   y <- 0
-  
+
   scale01 <- function(x) {
     dx <- diff(range(x))
     if (dx == 0) rep(0, length(x)) else (x-min(x))/dx
   }
-  
+
   draw_patient <- function(x) {
     patient_label <- paste("Patient", x$USUBJID)
     g <- l_layer_group(pae, label=patient_label)
@@ -133,11 +133,11 @@ createAEplot <- function() {
       x = c(1, x$TRTEDT - x$TRTSDT + 1), y = c(y, y+rectHeight),
       color = if(x$DISCDEAT) "lemonchiffon1" else "gray80",
       linecolor = "",
-      itemlabel = paste("Treatment Period for Patient", x$USUBJID)
+      itemLabel = paste("Treatment Period for Patient", x$USUBJID)
     )
     l_layer_text(pae, parent=g, text=patient_label, x=1, y=y+rectHeight,
                  justify='left', anchor='nw', color="black")
-    
+
     if (length(x$aes$AESEQ)>0) {
       xcoords <- Map(function(t0, t1) as.numeric(c(t0, t1)-x$TRTSDT+1),
                      x$aes$ASTDT, x$aes$AENDT)
@@ -149,12 +149,12 @@ createAEplot <- function() {
         i
       }, xcoords))) * rectHeight + y)
       col <- ifelse(x$aes$AESEVN == 3, "orangered", "dodgerblue4")
-      if (length(xcoords) == 1) 
+      if (length(xcoords) == 1)
         l_layer_line(pae, parent=g, x=xcoords[[1]], y=ycoords[[1]],
-                     itemlabel=x$aes$AETERM, linewidth=2, color=col)
+                     itemLabel=x$aes$AETERM, linewidth=2, color=col)
       else
         l_layer_lines(pae, parent=g, x=xcoords, y=ycoords,
-                      itemlabel=x$aes$AETERM, linewidth=2, color=col)
+                      itemLabel=x$aes$AETERM, linewidth=2, color=col)
     }
     y <<- y + rectHeight + 3
     l_scaleto_world(pae)
@@ -162,7 +162,7 @@ createAEplot <- function() {
   list(
     updateWith = function(selected) {
       y <<- 0
-      for (layer in l_layer_getChildren(pae, "root")) 
+      for (layer in l_layer_getChildren(pae, "root"))
         if (layer != "model") l_layer_expunge(pae, layer)
       if (sum(selected)>0)
         Map(function(x)draw_patient(x), l.aae[selected])
@@ -176,9 +176,9 @@ createAEplot <- function() {
 showAEs <- createAEplot()
 
 l_bind_state(p, "selected", function() {
-  showAEs$updateWith(p['selected'])  
+  showAEs$updateWith(p['selected'])
 })
 
 ## to create the plot at the end of the paper
-p['selected'] <- naes > 23 & sapply(l.aae, function(x)x$ARM) == 'ARM A' & 
+p['selected'] <- naes > 23 & sapply(l.aae, function(x)x$ARM) == 'ARM A' &
   sapply(l.aae, function(x)x$SEX) == 'M'
